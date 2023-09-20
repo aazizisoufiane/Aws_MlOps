@@ -61,26 +61,19 @@ def main(split_ratio):
     df = preprocess(df)
     # Split the DataFrame into training and test sets
     train, test = train_test_split(df, test_size=split_ratio, random_state=42)
+    labels_df = pd.DataFrame({"labels": list(labels)})
+    
 
-    # Define the output directory path
-#     output_dir = "output"
-
-#     # Create the output directory if it doesn't exist
-#     os.makedirs(output_dir, exist_ok=True)
-
-#     # Define the output file path
-#     output_file_path = os.path.join(output_dir, "train.csv")
-
-#     # Assuming 'df' is your DataFrame, you can write it to the output file
-#     df.to_csv(output_file_path, index=False)
     
     
     train_labels_output_path = os.path.join("/opt/ml/processing/train", "train.csv")
     test_labels_output_path = os.path.join("/opt/ml/processing/test", "test.csv")
+    labels_output_path = os.path.join("/opt/ml/processing/test", "labels.csv")
     logger.info("Saving training labels to {}".format(train_labels_output_path))
     train.to_csv(train_labels_output_path, index=False)
     logger.info("Saving test labels to {}".format(test_labels_output_path))    
     test.to_csv(test_labels_output_path, index=False)
+    labels_df.to_csv(labels_output_path, index=False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
