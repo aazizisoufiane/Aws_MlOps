@@ -1,6 +1,6 @@
 # AWS_MLOPS
 AWS MLOps projects hub for ML model development, deployment, and monitoring in AWS cloud using Sagemaker and Step functions
-
+```
 ├── README.md
 ├── config
 │   └── orchestrator.yaml
@@ -19,6 +19,6 @@ AWS MLOps projects hub for ML model development, deployment, and monitoring in A
     └── code
         ├── logger.py
         └── train.py
-
+```
         
   
