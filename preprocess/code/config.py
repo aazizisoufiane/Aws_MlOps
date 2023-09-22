@@ -1,9 +1,10 @@
-from omegaconf import DictConfig
 import yaml
-import os
+from omegaconf import DictConfig
+
 from logger import logger
 
 _config_name = 'preprocess.yaml'
+
 
 def get_config(config_name: str):
     """
@@ -23,8 +24,9 @@ def get_config(config_name: str):
     # Load and parse the YAML configuration file
     with open(config_file, 'r') as file:
         conf = yaml.safe_load(file)
-    
+
     return DictConfig(conf)
+
 
 # Load the configuration file
 config = get_config(_config_name)
@@ -32,4 +34,3 @@ config = get_config(_config_name)
 # Define a list of labels
 selected_columns = ['ABSTRACT']
 labels = ['Computer Science', 'Physics', 'Mathematics', 'Statistics', 'Quantitative Biology', 'Quantitative Finance']
-

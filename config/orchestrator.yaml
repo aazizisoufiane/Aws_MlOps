@@ -1,11 +1,11 @@
 s3:
   bucket: ck-qa-pldatascience
-  input:  aws_mlOps/input/data/train.csv
+  input: aws_mlOps/input/data/train.csv
   prefix: aws_mlOps/sagemaker-pipeline/stepfunctions
   bucket_path: s3://${s3.bucket}/${s3.prefix}/
   s3_bucket_base_uri: s3://${s3.bucket}
   preprocess:
-      train: ${s3.prefix}/train.csv
-      test: ${s3.prefix}/test.csv
-region : us-east-1
+    train: ${s3.prefix}/train.csv
+    test: ${s3.prefix}/test.csv
+region: us-east-1
 

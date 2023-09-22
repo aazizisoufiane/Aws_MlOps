@@ -1,8 +1,8 @@
-from omegaconf import DictConfig
 import yaml
-import os
+from omegaconf import DictConfig
 
 _config_name = 'orchestrator.yaml'
+
 
 def get_config(config_name: str):
     """
@@ -20,9 +20,9 @@ def get_config(config_name: str):
     # Load and parse the YAML configuration file
     with open(config_file, 'r') as file:
         conf = yaml.safe_load(file)
-    
+
     return DictConfig(conf)
+
 
 # Load the configuration file
 config = get_config(_config_name)
-
