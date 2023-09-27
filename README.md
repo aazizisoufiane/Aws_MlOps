@@ -1,4 +1,9 @@
 # CI/CD MLOps with SageMaker and Step Functions
+![Author](https://img.shields.io/badge/Author-Soufiane%20AAZIZI-brightgreen)
+[![Medium](https://img.shields.io/badge/Medium-Follow%20Me-blue)](https://medium.com/@aazizi.soufiane)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow%20Me-lightgrey)](https://github.com/aazizisoufiane)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect%20with%20Me-informational)](https://www.linkedin.com/in/soufiane-aazizi-phd-a502829/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This project serves as an introductory example of how to set up a CI/CD pipeline for Machine Learning Operations (MLOps)
 using Amazon SageMaker and AWS Step Functions. It's a valuable resource for those looking to streamline their ML
