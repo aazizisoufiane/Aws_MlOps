@@ -1,91 +1,160 @@
-# CI/CD MLOps with SageMaker and Step Functions
-![Author](https://img.shields.io/badge/Author-Soufiane%20AAZIZI-brightgreen)
-[![Medium](https://img.shields.io/badge/Medium-Follow%20Me-blue)](https://medium.com/@aazizi.soufiane)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow%20Me-lightgrey)](https://github.com/aazizisoufiane)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect%20with%20Me-informational)](https://www.linkedin.com/in/soufiane-aazizi-phd-a502829/)
+# ⚙️ AWS MLOps Pipeline
+
+> End-to-end ML pipeline orchestrated with SageMaker & Step Functions — from preprocessing to deployment with CI/CD.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![AWS](https://img.shields.io/badge/AWS-SageMaker-FF9900?logo=amazonaws)](https://aws.amazon.com/sagemaker/)
 
-This project serves as an introductory example of how to set up a CI/CD pipeline for Machine Learning Operations (MLOps)
-using Amazon SageMaker and AWS Step Functions. It's a valuable resource for those looking to streamline their ML
-workflows and automate the deployment of models.
+## The Problem
 
-Feel free to explore the code and adapt it to your specific ML use cases. If you have any questions or need further
-assistance, please don't hesitate to reach out.
+Deploying ML models manually is error-prone and doesn't scale. Data scientists build models in notebooks, but getting them to production requires reproducible pipelines with automated preprocessing, training, evaluation, and deployment.
+
+## The Solution
+
+A fully automated MLOps pipeline that orchestrates the entire ML lifecycle on AWS. Push code → GitHub Actions triggers → Step Functions orchestrates → SageMaker trains & deploys. One pipeline, zero manual steps.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    GitHub Actions CI/CD                       │
+│                  (triggered on push/tag)                      │
+└──────────────────────┬──────────────────────────────────────┘
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│              AWS Step Functions Workflow                      │
+│                                                              │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
+│  │  Preprocess   │──▶│    Train     │──▶│  Save Model  │    │
+│  │ (SKLearn      │   │ (HuggingFace │   │              │    │
+│  │  Processor)   │   │  Estimator)  │   │              │    │
+│  └──────┬───────┘   └──────┬───────┘   └──────┬───────┘    │
+│         │ ✗ Fail           │ ✗ Fail            │ ✗ Fail     │
+│         ▼                  ▼                   ▼            │
+│     [Error State]     [Error State]       [Error State]     │
+│                                                              │
+│  ┌──────────────┐   ┌──────────────┐                        │
+│  │  Endpoint     │──▶│   Deploy     │                        │
+│  │  Config       │   │  Endpoint    │                        │
+│  └──────────────┘   └──────────────┘                        │
+└─────────────────────────────────────────────────────────────┘
+                       │
+                       ▼
+              ┌──────────────┐
+              │  SageMaker    │
+              │  Endpoint     │
+              │  (Inference)  │
+              └──────────────┘
+```
+
+## Key Features
+
+- **Step Functions Orchestration** — Each pipeline step (preprocess, train, deploy) is a managed state with automatic error handling and catch states
+- **HuggingFace Estimator** — Multi-label text classification with DistilBERT, early stopping, and checkpoint resumption
+- **Automated Evaluation** — F1, accuracy, ROC-AUC, precision, and recall computed at each training run
+- **CI/CD Ready** — GitHub Actions workflow triggers the pipeline on code push
+- **Config-Driven** — OmegaConf + YAML configuration for S3 paths, hyperparameters, and infrastructure settings
+
+## Pipeline Steps
+
+| Step | Component | What It Does |
+|------|-----------|-------------|
+| **Preprocess** | `SKLearnProcessor` | Loads CSV, selects features, splits train/test, uploads to S3 |
+| **Train** | `HuggingFace Estimator` | Fine-tunes DistilBERT for multi-label classification with early stopping |
+| **Save Model** | `ModelStep` | Registers the trained model artifact in SageMaker |
+| **Configure** | `EndpointConfigStep` | Creates endpoint configuration (instance type, count) |
+| **Deploy** | `EndpointStep` | Deploys model as a real-time SageMaker endpoint |
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- AWS account with SageMaker and Step Functions permissions
+- Configured AWS credentials (`aws configure`)
+
+### Installation
+
+```bash
+git clone https://github.com/aazizisoufiane/Aws_MlOps.git
+cd Aws_MlOps
+pip install -r requirements.txt
+```
+
+### Configuration
+
+```bash
+cp .env.example .env
+# Edit .env with your AWS role ARN and credentials
+```
+
+Edit `config/orchestrator.yaml` with your S3 bucket and paths:
+
+```yaml
+s3:
+  bucket: your-s3-bucket-name
+  input: aws_mlOps/input/data/train.csv
+  prefix: aws_mlOps/sagemaker-pipeline/stepfunctions
+region: us-east-1
+```
+
+### Run
+
+Open `orchestrator.ipynb` and execute cells sequentially, or convert to a Python script for CI/CD:
+
+```bash
+jupyter nbconvert --to script orchestrator.ipynb
+python orchestrator.py
+```
 
 ## Project Structure
 
-The project structure is organized as follows:
-```plaintext
-├── .github
-│   └── workflows
-│       └── ci-cd.yml
-├── README.md
-├── config
-│   └── orchestrator.yaml
-├── config.py
-├── orchestrator.ipynb
-├── preprocess
-│   └── code
-│       ├── config
-│       │   └── preprocess.yaml
-│       ├── config.py
-│       ├── logger.py
-│       ├── requirements.txt
-│       └── run.py
+```
+Aws_MlOps/
+├── config/
+│   └── orchestrator.yaml       # S3 paths, region, pipeline config
+├── preprocess/
+│   └── code/
+│       ├── run.py              # Data loading, feature selection, train/test split
+│       ├── config.py           # Preprocessing configuration loader
+│       ├── config/
+│       │   └── preprocess.yaml # Preprocessing-specific settings
+│       ├── logger.py
+│       └── requirements.txt    # SageMaker processing job dependencies
+├── train/
+│   └── code/
+│       ├── train.py            # HuggingFace fine-tuning with evaluation metrics
+│       └── logger.py
+├── orchestrator.ipynb          # Full pipeline: preprocess → train → deploy
+├── config.py                   # Root config loader (OmegaConf)
+├── .env.example                # AWS credentials template
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml           # GitHub Actions pipeline trigger
 ├── requirements.txt
-└── train
-    └── code
-        ├── logger.py
-        └── train.py
+└── README.md
 ```
 
+## Tech Stack
 
-- `.github/workflows`: Contains the GitHub Actions workflow configuration for Continuous Integration/Continuous
-  Deployment (CI/CD).
-    - `ci-cd.yml`: Defines the CI/CD pipeline that automates the preprocessing, training, and deployment tasks.
+| Category | Tools |
+|----------|-------|
+| **Orchestration** | AWS Step Functions |
+| **ML Platform** | Amazon SageMaker (Processing, Training, Endpoints) |
+| **Model** | HuggingFace DistilBERT (multi-label classification) |
+| **Configuration** | OmegaConf + YAML |
+| **CI/CD** | GitHub Actions |
+| **Language** | Python 3.8+ |
 
-- `config`: Configuration files for the project.
-    - `orchestrator.yaml`: Configuration file for the Step Functions state machine.
+## License
 
-- `config.py`: Python module for project-specific configurations.
+MIT License — see [LICENSE](LICENSE) for details.
 
-- `orchestrator.ipynb`: Jupyter Notebook demonstrating the entire workflow using SageMaker and Step Functions. Convert this script to `orchestrator.py` to use the CI/CD feature.
+## Author
 
-- `preprocess`: Directory containing preprocessing related code.
-    - `code`: Code for data preprocessing.
-        - `config`: Configuration files for preprocessing.
-        - `config.py`: Python module for preprocessing configurations.
-        - `logger.py`: Logging utility for preprocessing.
-        - `requirements.txt`: List of Python dependencies for preprocessing.
-        - `run.py`: Script for running data preprocessing.
+**Soufiane Aazizi** — Lead AI Engineer
 
-- `requirements.txt`: List of Python dependencies for the entire project.
-
-- `train`: Directory containing training related code.
-    - `code`: Code for model training.
-        - `logger.py`: Logging utility for training.
-        - `train.py`: Script for training the machine learning model.
-
-## Getting Started
-
-Follow these steps to get started with the project:
-
-1. **Clone the Repository**: Clone this GitHub repository to your local development environment.
-
-   ```bash
-   git clone https://github.com/your-username/your-repo.git
-   ```
-
-2. **Install Dependencies**: Install the Python dependencies required for preprocessing and training.
-   
-    ```bash 
-    pip install -r requirements.txt 
-    ```
-3. **Configure AWS Credentials**: Ensure you have configured your AWS credentials and have the necessary permissions to use SageMaker and Step Functions.
-
-4. **Run the Workflow**: Open and run the orchestrator.ipynb Jupyter Notebook to execute the complete CI/CD workflow. This notebook will guide you through each step of the process.
-
-## CI/CD Pipeline
-The CI/CD pipeline defined in .github/workflows/ci-cd.yml automates the entire machine learning workflow, including data preprocessing, model training, and deployment. When code is pushed or tagged, the pipeline automatically triggers the workflow to keep your ML model up to date.
-        
-  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/soufiane-aazizi-phd-a502829/)
+[![Medium](https://img.shields.io/badge/Medium-000000?style=flat-square&logo=medium&logoColor=white)](https://medium.com/@aazizi.soufiane)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/aazizisoufiane)

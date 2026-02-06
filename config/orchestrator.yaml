@@ -1,5 +1,5 @@
 s3:
-  bucket: ck-qa-pldatascience
+  bucket: your-s3-bucket-name
   input: aws_mlOps/input/data/train.csv
   prefix: aws_mlOps/sagemaker-pipeline/stepfunctions
   bucket_path: s3://${s3.bucket}/${s3.prefix}/
